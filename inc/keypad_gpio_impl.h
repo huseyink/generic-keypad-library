@@ -17,7 +17,8 @@ extern "C" {
 
 void    gpio_write(void* vpGpioPort, uint16_t u16GpioPin, uint8_t u8GpioState);
 uint8_t gpio_read (void* vpGpioPort, uint16_t u16GpioPin);
-
+void gpio_setPinOutput(void* vpGpioPort, uint16_t u16GpioPin);
+void gpio_setPinInput(void* vpGpioPort, uint16_t u16GpioPin);
 void gpio_init(void);
 void gpio_deInit(void);
 

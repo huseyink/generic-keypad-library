@@ -24,6 +24,42 @@ void gpio_write(void* vpGpioPort, uint16_t u16GpioPin, uint8_t u8GpioState)
 }
 
 /**
+ * @fn void gpio_setPinOutput(void*, uint16_t)
+ * @brief
+ *
+ * @param vpGpioPort
+ * @param u16GpioPin
+ */
+void gpio_setPinOutput(void* vpGpioPort, uint16_t u16GpioPin)
+{
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	GPIO_InitStruct.Pin = u16GpioPin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+	HAL_GPIO_Init((GPIO_TypeDef*)vpGpioPort, &GPIO_InitStruct);
+}
+
+/**
+ * @fn void gpio_setPinInput(void*, uint16_t)
+ * @brief
+ *
+ * @param vpGpioPort
+ * @param u16GpioPin
+ */
+void gpio_setPinInput(void* vpGpioPort, uint16_t u16GpioPin)
+{
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	GPIO_InitStruct.Pin = u16GpioPin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	HAL_GPIO_Init((GPIO_TypeDef*)vpGpioPort, &GPIO_InitStruct);
+}
+
+/**
  * @fn uint8_t gpio_read(void*, uint16_t_t)
  * @brief
  *
