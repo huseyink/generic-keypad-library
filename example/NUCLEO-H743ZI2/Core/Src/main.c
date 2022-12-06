@@ -27,8 +27,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "4x4-keypad.h"
-#include "keypad_gpio_impl.h"
+#include "../../keypad/inc/keypad.h"
+#include "../../keypad/inc/keypad_gpio_impl.h"
 
 /* USER CODE END Includes */
 
@@ -39,6 +39,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define KEYPAD_COLUMN_SIZE (4U)
+#define KEYPAD_ROW_SIZE    (4U)
 
 /* USER CODE END PD */
 
@@ -133,22 +136,22 @@ int main(void)
 	{
 		.vpGpioPort = GPIOE,
 		.u16GpioPin = GPIO_PIN_3,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	},
 	{
 		.vpGpioPort = GPIOF,
 		.u16GpioPin = GPIO_PIN_8,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	},
 	{
 		.vpGpioPort = GPIOF,
 		.u16GpioPin = GPIO_PIN_7,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	},
 	{
 		.vpGpioPort = GPIOF,
 		.u16GpioPin = GPIO_PIN_9,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	}
   };
 
@@ -156,22 +159,22 @@ int main(void)
 	{
 		.vpGpioPort = GPIOE,
 		.u16GpioPin = GPIO_PIN_2,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	},
 	{
 		.vpGpioPort = GPIOE,
 		.u16GpioPin = GPIO_PIN_4,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	},
 	{
 		.vpGpioPort = GPIOE,
 		.u16GpioPin = GPIO_PIN_5,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	},
 	{
 		.vpGpioPort = GPIOE,
 		.u16GpioPin = GPIO_PIN_6,
-		.eGpioContactType = IO_NORMALLY_CLOSE,
+		.eGpioContactType = IO_NORMALLY_OPEN,
 	}
   };
 
@@ -192,8 +195,11 @@ int main(void)
 	{'*', '0', '#', 'D'},
   };
 
+  tKeypad.tKey = tKey;
+  tKeypad.tKeypadIO = &tKeypadIO;
+  tKeypad.u8KeyMap = (uint8_t*)u8KeyMap;
 
-  keypad_init(&tKeypad, tKey, &tKeypadIO, (uint8_t*)u8KeyMap);
+  keypad_init(&tKeypad, KEYPAD_ROW_SIZE, KEYPAD_COLUMN_SIZE);
   keypad_addEventCallback(&tKeypad, keyEventCallback);
 
   /* USER CODE END 2 */

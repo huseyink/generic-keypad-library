@@ -75,10 +75,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="example|example/NUCLEO-H743ZI2/Core/Startup" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="4x4-keypad"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry excluding="startup_stm32h743zitx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="4x4-keypad/example/NUCLEO-H743ZI2/Core/Startup"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry excluding="example|example/NUCLEO-H743ZI2/Core/Startup" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="keypad"/>
+						<entry excluding="startup_stm32h743zitx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="keypad/example/NUCLEO-H743ZI2/Core/Startup"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -152,10 +152,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="example|example/NUCLEO-H743ZI2/Core/Startup" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="4x4-keypad"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry excluding="startup_stm32h743zitx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="4x4-keypad/example/NUCLEO-H743ZI2/Core/Startup"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry excluding="example|example/NUCLEO-H743ZI2/Core/Startup" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="keypad"/>
+						<entry excluding="startup_stm32h743zitx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="keypad/example/NUCLEO-H743ZI2/Core/Startup"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
