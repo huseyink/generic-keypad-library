@@ -1,12 +1,12 @@
-/** @file 4x4-keypad.c
+/** @file keypad.c
  * 
- * @brief   4x4 keypad library source file. 
+ * @brief   generic keypad library source file.
  * @author  huseyink
  * @date    03/12/2022
  * @version v1.0.0
  */
 
-#include "../inc/4x4-keypad.h"
+#include "../inc/keypad.h"
 
 #define KEY_FLAG_ONPRESS_SENT               ((uint16_t)0x0001)
 #define KEY_TIME_DEBOUNCE_GET_MIN(btn)      20
@@ -17,27 +17,38 @@
 #define KEY_CLICK_MAX_CONSECUTIVE(btn)      3
 
 /**
- * @fn void keypad_init(SKeypad*, SKey*, SKeypadIO*, uint8_t*)
- * @brief
+ * @fn uint8_t keypad_init(SKeypad*, uint8_t, uint8_t)
+ * @brief Initialize keypad manager.
  *
- * @param tKeypad
- * @param tKey
- * @param tKeypadIO
- * @param u8KeyMap
+ * @param tKeypad        SKeypad instance.
+ * @param u8RowCount     Row count of keypad.
+ * @param u8ColumnCount  Column count of keypad.
+ * @return               `1` on success, `0` otherwise.
  */
-void keypad_init(SKeypad* tKeypad, SKey* tKey, SKeypadIO* tKeypadIO, uint8_t* u8KeyMap)
+uint8_t keypad_init(SKeypad* tKeypad, uint8_t u8RowCount, uint8_t u8ColumnCount)
 {
-	tKeypad->tKey = tKey;
-	tKeypad->tKeypadIO = tKeypadIO;
-	tKeypad->u8KeyMap = u8KeyMap;
+	tKeypad->u8ColumnCount = u8ColumnCount;
+	tKeypad->u8RowCount = u8RowCount;
+
+	/* function pointers NULL check */
+	if(tKeypad->tKeypadIO->gpioRead == NULL || tKeypad->tKeypadIO->gpioWrite == NULL)
+		return 0;
+
+	if(tKeypad->tKeypadIO->gpioInput == NULL || tKeypad->tKeypadIO->gpioOutput == NULL)
+		return 0;
+
+	if(tKeypad->fpEventCallback == NULL)
+		return 0;
+
+	return 1;
 }
 
 /**
  * @fn void keypad_addEventCallback(SKeypad*, fpEventCallback)
- * @brief
+ * @brief Event callback function for keypad events.
  *
- * @param tKeypad
- * @param keyEventCallback
+ * @param tKeypad           SKeypad instance
+ * @param keyEventCallback  Function to pointer of callback function.
  */
 void keypad_addEventCallback(SKeypad* tKeypad, fpEventCallback keyEventCallback)
 {
@@ -45,21 +56,22 @@ void keypad_addEventCallback(SKeypad* tKeypad, fpEventCallback keyEventCallback)
 }
 
 /**
- * @fn void keypad_scan(SKeypad*, uint32_t)
- * @brief
+ * @fn uint8_t keypad_scan(SKeypad*, uint32_t)
+ * @brief Scans the keypad 's rows and read column's inputs.
  *
- * @param tKeypad
- * @param mstime
+ * @param tKeypad SKeypad instance
+ * @param mstime  Current time in millisecond.
+ * @return `1` on success, `0` otherwise.
  */
-void keypad_scan(SKeypad* tKeypad, uint32_t mstime)
+uint8_t keypad_scan(SKeypad* tKeypad, uint32_t mstime)
 {
 	SKey* tKey;
 	uint8_t u8NewState = 0;
 
-	for(uint8_t u8Row = 0; u8Row < KEYPAD_ROW_SIZE; ++u8Row)
+	for(uint8_t u8Row = 0; u8Row < tKeypad->u8RowCount; ++u8Row)
 	{
-		uint8_t u8GpioState = (tKeypad->tKeypadIO->ioRow[u8Row].eGpioContactType == IO_NORMALLY_CLOSE) ? KEYPAD_GPIO_SET
-                                                                                                       : KEYPAD_GPIO_RESET;
+		uint8_t u8GpioState = (tKeypad->tKeypadIO->ioRow[u8Row].eGpioContactType == IO_NORMALLY_OPEN) ? KEYPAD_GPIO_SET
+                                                                                                      : KEYPAD_GPIO_RESET;
 		/* Begin row pulse output */
 		tKeypad->tKeypadIO->gpioOutput(tKeypad->tKeypadIO->ioRow[u8Row].vpGpioPort,
 				                       tKeypad->tKeypadIO->ioRow[u8Row].u16GpioPin);
@@ -68,18 +80,19 @@ void keypad_scan(SKeypad* tKeypad, uint32_t mstime)
 						              tKeypad->tKeypadIO->ioRow[u8Row].u16GpioPin,
 						              u8GpioState);
 
-		for(uint8_t u8Column = 0; u8Column < KEYPAD_COLUMN_SIZE; ++u8Column)
+		for(uint8_t u8Column = 0; u8Column < tKeypad->u8ColumnCount; ++u8Column)
 		{
-			uint8_t u8KeyIndex = (u8Row * KEYPAD_ROW_SIZE) + u8Column;
+			/* determine the key index */
+			uint8_t u8KeyIndex = (u8Row * tKeypad->u8RowCount) + u8Column;
 
 	        tKey = &tKeypad->tKey[u8KeyIndex];
 	        tKey->u8KeyChar = tKeypad->u8KeyMap[u8KeyIndex];
 
 	        /* Get button state */
 	        u8NewState = tKeypad->tKeypadIO->gpioRead(tKeypad->tKeypadIO->ioColumn[u8Column].vpGpioPort,
-					                                 tKeypad->tKeypadIO->ioColumn[u8Column].u16GpioPin);
+					                                  tKeypad->tKeypadIO->ioColumn[u8Column].u16GpioPin);
 
-	        u8NewState = (tKeypad->tKeypadIO->ioRow[u8Row].eGpioContactType == IO_NORMALLY_CLOSE) ? u8NewState : !u8NewState;
+	        u8NewState = (tKeypad->tKeypadIO->ioRow[u8Row].eGpioContactType == IO_NORMALLY_OPEN) ? u8NewState : !u8NewState;
 
 	        /*
 	         * Button state has changed
@@ -216,6 +229,8 @@ void keypad_scan(SKeypad* tKeypad, uint32_t mstime)
 		tKeypad->tKeypadIO->gpioInput(tKeypad->tKeypadIO->ioRow[u8Row].vpGpioPort,
 				                      tKeypad->tKeypadIO->ioRow[u8Row].u16GpioPin);
 	}
+
+	return 1;
 }
 
 /*** end of file ***/

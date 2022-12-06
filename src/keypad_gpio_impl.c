@@ -7,8 +7,9 @@
  */
 
 /* include platform specific GPIO files */
+#include "../../keypad/inc/keypad_gpio_impl.h"
+
 #include "gpio.h"
-#include "keypad_gpio_impl.h"
 
 /**
  * @fn void gpio_write(void*, uint16_t, uint8_t)

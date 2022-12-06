@@ -1,6 +1,6 @@
-/** @file 4x4-keypad.c
+/** @file keypad.h
  * 
- * @brief   4x4 keypad library header file. 
+ * @brief   generic keypad library header file.
  * @author  huseyink
  * @date    03/12/2022
  * @version v1.0.0
@@ -11,14 +11,16 @@
 #define KEYPAD_H
 
 #include <stdint.h>
-#include "key.h"
+
+#include "../../keypad/inc/key.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#define KEYPAD_COLUMN_SIZE (4U)
-#define KEYPAD_ROW_SIZE    (4U)
+#ifndef NULL
+#define NULL (void*)0
+#endif
 
 #define KEYPAD_GPIO_SET    (1U)
 #define KEYPAD_GPIO_RESET  (0U)
@@ -79,8 +81,8 @@ typedef void (*fpEventCallback)(struct _SKeypad* tKeyPad, EKeyState eKeyState, u
  *
  */
 typedef enum {
-	IO_NORMALLY_CLOSE,
-	IO_NORMALLY_OPEN
+	IO_NORMALLY_CLOSE, /* pull-up connection */
+	IO_NORMALLY_OPEN   /* pull-down connection */
 }EGpioContactType;
 
 /**
@@ -119,8 +121,8 @@ typedef struct _SKeypad{
 	fpEventCallback fpEventCallback;
 }SKeypad;
 
-void keypad_init(SKeypad* tKeypad, SKey* tKey, SKeypadIO* tKeypadIO, uint8_t* u8KeyMap);
-void keypad_scan(SKeypad* tKeypad, uint32_t msTime);
+uint8_t keypad_init(SKeypad* tKeypad, uint8_t u8RowCount, uint8_t u8ColumnCount);
+uint8_t keypad_scan(SKeypad* tKeypad, uint32_t msTime);
 void keypad_addEventCallback(SKeypad* tKeypad, fpEventCallback keyEventCallback);
 
 #ifdef __cplusplus

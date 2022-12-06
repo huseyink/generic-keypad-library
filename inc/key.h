@@ -1,6 +1,6 @@
 /** @file key.h
  * 
- * @brief
+ * @brief   key settings header file.
  * @author  huseyinkoc
  * @date    03/12/2022
  * @version v1.0.0
