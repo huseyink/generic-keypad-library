@@ -83,142 +83,142 @@ uint8_t keypad_scan(SKeypad* tKeypad, uint32_t mstime)
 		for(uint8_t u8Column = 0; u8Column < tKeypad->u8ColumnCount; ++u8Column)
 		{
 			/* determine the key index */
-			uint8_t u8KeyIndex = (u8Row * tKeypad->u8RowCount) + u8Column;
+			uint8_t u8KeyIndex = (u8Row * tKeypad->u8ColumnCount) + u8Column;
 
-	        tKey = &tKeypad->tKey[u8KeyIndex];
-	        tKey->u8KeyChar = tKeypad->u8KeyMap[u8KeyIndex];
+			tKey = &tKeypad->tKey[u8KeyIndex];
+			tKey->u8KeyChar = tKeypad->u8KeyMap[u8KeyIndex];
 
-	        /* Get button state */
-	        u8NewState = tKeypad->tKeypadIO->gpioRead(tKeypad->tKeypadIO->ioColumn[u8Column].vpGpioPort,
-					                                  tKeypad->tKeypadIO->ioColumn[u8Column].u16GpioPin);
+			/* Get button state */
+			u8NewState = tKeypad->tKeypadIO->gpioRead(tKeypad->tKeypadIO->ioColumn[u8Column].vpGpioPort,
+													  tKeypad->tKeypadIO->ioColumn[u8Column].u16GpioPin);
 
-	        u8NewState = (tKeypad->tKeypadIO->ioRow[u8Row].eGpioContactType == IO_NORMALLY_OPEN) ? u8NewState : !u8NewState;
+			u8NewState = (tKeypad->tKeypadIO->ioRow[u8Row].eGpioContactType == IO_NORMALLY_OPEN) ? u8NewState : !u8NewState;
 
-	        /*
-	         * Button state has changed
-	         */
-	        if (u8NewState != tKey->tKeyStatus.u8OldState) {
-	            /*
-	             * Button just became inactive
-	             *
-	             * - Handle on-release event
-	             * - Handle on-click event
-	             */
-	            if (!u8NewState) {
-	                /*
-	                 * We only need to react if on-press event has even been started.
-	                 *
-	                 * Do nothing if that was not the case
-	                 */
-	                if (tKey->tKeyStatus.u16Flags & KEY_FLAG_ONPRESS_SENT) {
-	                    /* Handle on-release event */
-	                    tKey->tKeyStatus.u16Flags &= ~KEY_FLAG_ONPRESS_SENT;
-	                    tKey->tKeyState = KEY_RELEASED;
+			/*
+			 * Button state has changed
+			 */
+			if (u8NewState != tKey->tKeyStatus.u8OldState) {
+				/*
+				 * Button just became inactive
+				 *
+				 * - Handle on-release event
+				 * - Handle on-click event
+				 */
+				if (!u8NewState) {
+					/*
+					 * We only need to react if on-press event has even been started.
+					 *
+					 * Do nothing if that was not the case
+					 */
+					if (tKey->tKeyStatus.u16Flags & KEY_FLAG_ONPRESS_SENT) {
+						/* Handle on-release event */
+						tKey->tKeyStatus.u16Flags &= ~KEY_FLAG_ONPRESS_SENT;
+						tKey->tKeyState = KEY_RELEASED;
 
-	                    tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
+						tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
 
-	                    /* Check time validity for click event */
-	                    if ((mstime - tKey->tKeyStatus.u32TimeChange) >= KEY_TIME_CLICK_GET_PRESSED_MIN(tKey)
-	                        && (mstime - tKey->tKeyStatus.u32TimeChange) <= KEY_TIME_CLICK_GET_PRESSED_MAX(tKey)) {
+						/* Check time validity for click event */
+						if ((mstime - tKey->tKeyStatus.u32TimeChange) >= KEY_TIME_CLICK_GET_PRESSED_MIN(tKey)
+							&& (mstime - tKey->tKeyStatus.u32TimeChange) <= KEY_TIME_CLICK_GET_PRESSED_MAX(tKey)) {
 
-	                        /*
-	                         * Increase consecutive clicks if max not reached yet
-	                         * and if time between two clicks is not too long
-	                         *
-	                         * Otherwise we consider click as fresh one
-	                         */
-	                        if (tKey->tKeyStatus.tClick.u16Counter > 0 && tKey->tKeyStatus.tClick.u16Counter < KEY_CLICK_MAX_CONSECUTIVE(tKey)
-	                            && (mstime - tKey->tKeyStatus.tClick.u32LastTime) < KEY_TIME_CLICK_MAX_MULTI(tKey)) {
-	                            ++tKey->tKeyStatus.tClick.u16Counter;
-	                        } else {
-	                            tKey->tKeyStatus.tClick.u16Counter = 1;
-	                        }
-	                        tKey->tKeyStatus.tClick.u32LastTime = mstime;
-	                    } else {
-	                        /*
-	                         * There was an on-release event, but timing
-	                         * for click event detection is outside allowed window.
-	                         *
-	                         * If user has some consecutive clicks from previous clicks,
-	                         * these will be sent after the timeout window (and after the on-release event)
-	                         */
-	                    }
-	                }
-	            }
+							/*
+							 * Increase consecutive clicks if max not reached yet
+							 * and if time between two clicks is not too long
+							 *
+							 * Otherwise we consider click as fresh one
+							 */
+							if (tKey->tKeyStatus.tClick.u16Counter > 0 && tKey->tKeyStatus.tClick.u16Counter < KEY_CLICK_MAX_CONSECUTIVE(tKey)
+								&& (mstime - tKey->tKeyStatus.tClick.u32LastTime) < KEY_TIME_CLICK_MAX_MULTI(tKey)) {
+								++tKey->tKeyStatus.tClick.u16Counter;
+							} else {
+								tKey->tKeyStatus.tClick.u16Counter = 1;
+							}
+							tKey->tKeyStatus.tClick.u32LastTime = mstime;
+						} else {
+							/*
+							 * There was an on-release event, but timing
+							 * for click event detection is outside allowed window.
+							 *
+							 * If user has some consecutive clicks from previous clicks,
+							 * these will be sent after the timeout window (and after the on-release event)
+							 */
+						}
+					}
+				}
 
-	            /*
-	             * Button just pressed
-	             */
-	            else {
-	                /* Do nothing - things are handled after debounce period */
-	            }
-	            tKey->tKeyStatus.u32TimeChange = mstime;
-	            tKey->tKeyStatus.tHold.u32LastTime = mstime;
-	            tKey->tKeyStatus.tHold.u16Counter = 0;
-	        }
+				/*
+				 * Button just pressed
+				 */
+				else {
+					/* Do nothing - things are handled after debounce period */
+				}
+				tKey->tKeyStatus.u32TimeChange = mstime;
+				tKey->tKeyStatus.tHold.u32LastTime = mstime;
+				tKey->tKeyStatus.tHold.u16Counter = 0;
+			}
 
-	        /*
-	         * Button is still pressed
-	         */
-	        else if (u8NewState) {
-	            /*
-	             * Handle debounce and send on-press event
-	             *
-	             * This is when we detect valid press
-	             */
-	            if (!(tKey->tKeyStatus.u16Flags & KEY_FLAG_ONPRESS_SENT)) {
-	                /* Check minimum stable time */
-	                if ((mstime - tKey->tKeyStatus.u32TimeChange) >= KEY_TIME_DEBOUNCE_GET_MIN(tKey)) {
-	                    /* Start with new on-press */
-	                    tKey->tKeyStatus.u16Flags |= KEY_FLAG_ONPRESS_SENT;
-	                    tKey->tKeyState = KEY_PRESSED;
+			/*
+			 * Button is still pressed
+			 */
+			else if (u8NewState) {
+				/*
+				 * Handle debounce and send on-press event
+				 *
+				 * This is when we detect valid press
+				 */
+				if (!(tKey->tKeyStatus.u16Flags & KEY_FLAG_ONPRESS_SENT)) {
+					/* Check minimum stable time */
+					if ((mstime - tKey->tKeyStatus.u32TimeChange) >= KEY_TIME_DEBOUNCE_GET_MIN(tKey)) {
+						/* Start with new on-press */
+						tKey->tKeyStatus.u16Flags |= KEY_FLAG_ONPRESS_SENT;
+						tKey->tKeyState = KEY_PRESSED;
 
-	                    tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
+						tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
 
-	                    /* Set keep alive time */
-	                    tKey->tKeyStatus.tHold.u32LastTime = mstime;
-	                }
-	            }
+						/* Set keep alive time */
+						tKey->tKeyStatus.tHold.u32LastTime = mstime;
+					}
+				}
 
-	            /*
-	             * Handle keep alive, but only if on-press event has been sent
-	             *
-	             * Keep alive is sent when valid press is being detected
-	             */
-	            else {
-	                if ((mstime - tKey->tKeyStatus.tHold.u32LastTime) >= KEY_TIME_KEEPALIVE_PERIOD(tKey)) {
-	                    tKey->tKeyStatus.tHold.u32LastTime += KEY_TIME_KEEPALIVE_PERIOD(tKey);
-	                    tKey->tKeyStatus.tHold.u16Counter = 0;
-	                    tKey->tKeyState = KEY_HOLD;
+				/*
+				 * Handle keep alive, but only if on-press event has been sent
+				 *
+				 * Keep alive is sent when valid press is being detected
+				 */
+				else {
+					if ((mstime - tKey->tKeyStatus.tHold.u32LastTime) >= KEY_TIME_KEEPALIVE_PERIOD(tKey)) {
+						tKey->tKeyStatus.tHold.u32LastTime += KEY_TIME_KEEPALIVE_PERIOD(tKey);
+						tKey->tKeyStatus.tHold.u16Counter = 0;
+						tKey->tKeyState = KEY_HOLD;
 
-	                    tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
-	                }
-	            }
-	        }
+						tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
+					}
+				}
+			}
 
-	        /*
-	         * Button is still released
-	         */
-	        else {
-	            /*
-	             * Based on the configuration, this part of the code
-	             * will send on-click event after certain timeout.
-	             *
-	             * This feature is useful if users prefers multi-click feature
-	             * that is reported only after last click event happened,
-	             * including number of clicks made by user
-	             */
-	            if (tKey->tKeyStatus.tClick.u16Counter > 0) {
-	                if ((mstime - tKey->tKeyStatus.tClick.u32LastTime) >= KEY_TIME_CLICK_MAX_MULTI(tKey)) {
-	                	tKey->tKeyState = KEY_CLICKED;
+			/*
+			 * Button is still released
+			 */
+			else {
+				/*
+				 * Based on the configuration, this part of the code
+				 * will send on-click event after certain timeout.
+				 *
+				 * This feature is useful if users prefers multi-click feature
+				 * that is reported only after last click event happened,
+				 * including number of clicks made by user
+				 */
+				if (tKey->tKeyStatus.tClick.u16Counter > 0) {
+					if ((mstime - tKey->tKeyStatus.tClick.u32LastTime) >= KEY_TIME_CLICK_MAX_MULTI(tKey)) {
+						tKey->tKeyState = KEY_CLICKED;
 
-	                	tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
-	                    tKey->tKeyStatus.tClick.u16Counter = 0;
-	                }
-	            }
-	        }
+						tKeypad->fpEventCallback(tKeypad, tKey->tKeyState, tKey->u8KeyChar);
+						tKey->tKeyStatus.tClick.u16Counter = 0;
+					}
+				}
+			}
 
-	        tKey->tKeyStatus.u8OldState = u8NewState;
+			tKey->tKeyStatus.u8OldState = u8NewState;
 		}
 
 		tKeypad->tKeypadIO->gpioWrite(tKeypad->tKeypadIO->ioRow[u8Row].vpGpioPort,
